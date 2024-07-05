@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "118038462665",
+    "project_id": "booklibrary-c8d53",
+    "storage_bucket": "booklibrary-c8d53.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118038462665:android:76edec91709a403a2e8d18",
+        "android_client_info": {
+          "package_name": "uk.ac.tees.mad.w9628563"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuTL8WNnqaAfslx-93emazo70pmb20CQM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
