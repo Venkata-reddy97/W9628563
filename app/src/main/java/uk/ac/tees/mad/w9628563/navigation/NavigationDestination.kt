@@ -23,3 +23,8 @@ object RegisterDestination: NavigationDestination{
     override val navRoute: String
         get() = "register"
 }
+
+object BookDetailDestination: NavigationDestination{
+    override val navRoute: String
+        get() = "bookDetail"
+}
