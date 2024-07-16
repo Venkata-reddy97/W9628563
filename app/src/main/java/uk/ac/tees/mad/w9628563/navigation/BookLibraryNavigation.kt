@@ -12,7 +12,9 @@ import androidx.navigation.navArgument
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.w9628563.screens.AddBookScreen
 import uk.ac.tees.mad.w9628563.screens.BookDetailsScreen
+import uk.ac.tees.mad.w9628563.screens.BookListScreen
 import uk.ac.tees.mad.w9628563.screens.HomeScreen
 import uk.ac.tees.mad.w9628563.screens.LoginScreen
 import uk.ac.tees.mad.w9628563.screens.RegisterScreen
@@ -47,6 +49,12 @@ fun BookLibraryNavigation() {
                 HomeScreen(
                     onBookClick = {
                         navController.navigate("${BookDetailDestination.navRoute}/$it")
+                    },
+                    onAddBook = {
+                        navController.navigate(AddBookDestination.navRoute)
+                    },
+                    onBookList = {
+                        navController.navigate(BookListDestination.navRoute)
                     }
                 )
             }
@@ -73,7 +81,13 @@ fun BookLibraryNavigation() {
                 BookDetailsScreen(bookId = bookId!!, navController = navController)
             }
 
+            composable(AddBookDestination.navRoute) {
+                AddBookScreen(navController = navController)
+            }
 
+            composable(BookListDestination.navRoute) {
+                BookListScreen(navController = navController)
+            }
         }
     }
 

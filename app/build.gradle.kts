@@ -90,6 +90,8 @@ dependencies {
     //Coil
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    implementation("com.google.accompanist:accompanist-permissions:0.24.13-rc")
+
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)

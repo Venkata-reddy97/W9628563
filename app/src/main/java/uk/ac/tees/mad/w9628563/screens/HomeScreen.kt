@@ -1,6 +1,6 @@
 package uk.ac.tees.mad.w9628563.screens
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +13,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text2.input.rememberTextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -25,54 +38,122 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import kotlinx.coroutines.launch
 import uk.ac.tees.mad.w9628563.domain.BookItem
 import uk.ac.tees.mad.w9628563.googleBooksApiService
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
-    onBookClick: (String) -> Unit
+    onBookClick: (String) -> Unit,
+    onAddBook: () -> Unit,
+    onBookList: () -> Unit
 ) {
     val books = remember { mutableStateListOf<BookItem>() }
+    var searchValue by remember {
+        mutableStateOf("")
+    }
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
 
-    Scaffold(Modifier.fillMaxSize(), topBar = {
-        TopAppBar(
-            title = {
-                Text("Book Library", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Book Library", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                },
+                actions = {
+                    IconButton(onClick = onBookList) {
+                        Icon(
+                            imageVector = Icons.Default.Book,
+                            contentDescription = null
+                        )
+                    }
+                }
+            )
+        }, floatingActionButton = {
+            FloatingActionButton(onClick = onAddBook) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
-        )
-    }) { innerPadding ->
+        }) { innerPadding ->
         if (books.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                items(books) {
-
-                    BookCard(
-                        book = it,
-                        onClick = {
-                            onBookClick(it.id)
+                OutlinedTextField(
+                    value = searchValue,
+                    onValueChange = { searchValue = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true,
+                    placeholder = {
+                        Text(text = "Books, authors, category ...")
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            focusManager.clearFocus()
+                            scope.launch {
+                                val response = if (searchValue.isEmpty())
+                                    googleBooksApiService.getBooks("best+subject:fiction ")
+                                else googleBooksApiService.getBooks(searchValue)
+                                books.clear()
+                                books.addAll(response.items)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null
+                            )
                         }
-                    )
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = {
+                        focusManager.clearFocus()
+                        scope.launch {
+                            val response = if (searchValue.isEmpty())
+                                googleBooksApiService.getBooks("best+subject:fiction ")
+                            else googleBooksApiService.getBooks(searchValue)
+                            books.clear()
+                            books.addAll(response.items)
+                        }
+                    })
+                )
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(books) {
+
+                        BookCard(book = it, onClick = {
+                            onBookClick(it.id)
+                        })
+                    }
                 }
             }
         }
@@ -92,17 +173,14 @@ fun HomeScreen(
 
 @Composable
 fun BookCard(
-    book: BookItem,
-    onClick: () -> Unit
+    book: BookItem, onClick: () -> Unit
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         val imageUrl = book.volumeInfo.imageLinks?.thumbnail?.replace("http", "https")
         if (imageUrl != null) {
 
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .crossfade(true)
+                model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true)
                     .build(),
                 contentDescription = null,
                 modifier = Modifier

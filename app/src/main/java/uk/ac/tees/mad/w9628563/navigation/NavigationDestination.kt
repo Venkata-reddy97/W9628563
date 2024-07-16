@@ -28,3 +28,14 @@ object BookDetailDestination: NavigationDestination{
     override val navRoute: String
         get() = "bookDetail"
 }
+
+object AddBookDestination: NavigationDestination{
+    override val navRoute: String
+        get() = "addBook"
+}
+
+object BookListDestination: NavigationDestination{
+    override val navRoute: String
+        get() = "bookList"
+
+}
