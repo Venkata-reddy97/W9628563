@@ -1,6 +1,5 @@
 package uk.ac.tees.mad.w9628563.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,13 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,7 +29,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -50,18 +51,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.w9628563.database.FavoriteBook
 import uk.ac.tees.mad.w9628563.domain.BookItem
 import uk.ac.tees.mad.w9628563.googleBooksApiService
+import uk.ac.tees.mad.w9628563.navigation.BottomNavigationBar
+import uk.ac.tees.mad.w9628563.viewmodels.FavoriteBookViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onBookClick: (String) -> Unit,
     onAddBook: () -> Unit,
-    onBookList: () -> Unit
+    onBookList: () -> Unit,
+    navController: NavHostController,
+    favoriteBookViewModel: FavoriteBookViewModel = hiltViewModel()
 ) {
     val books = remember { mutableStateListOf<BookItem>() }
     var searchValue by remember {
@@ -76,17 +86,13 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text("Book Library", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                },
-                actions = {
-                    IconButton(onClick = onBookList) {
-                        Icon(
-                            imageVector = Icons.Default.Book,
-                            contentDescription = null
-                        )
-                    }
                 }
             )
-        }, floatingActionButton = {
+        },
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        },
+        floatingActionButton = {
             FloatingActionButton(onClick = onAddBook) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
@@ -152,7 +158,7 @@ fun HomeScreen(
 
                         BookCard(book = it, onClick = {
                             onBookClick(it.id)
-                        })
+                        }, favoriteBookViewModel = favoriteBookViewModel)
                     }
                 }
             }
@@ -171,32 +177,69 @@ fun HomeScreen(
     }
 }
 
+
 @Composable
 fun BookCard(
-    book: BookItem, onClick: () -> Unit
+    book: BookItem,
+    onClick: () -> Unit,
+    favoriteBookViewModel: FavoriteBookViewModel = viewModel()
 ) {
+    var isFavorite by remember { mutableStateOf(false) }
+
+    LaunchedEffect(book.id) {
+        isFavorite = favoriteBookViewModel.isFavorite(book.id)
+    }
+
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        val imageUrl = book.volumeInfo.imageLinks?.thumbnail?.replace("http", "https")
-        if (imageUrl != null) {
+        Box(modifier = Modifier.fillMaxWidth()) {
 
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true)
-                    .build(),
-                contentDescription = null,
+            val imageUrl = book.volumeInfo.imageLinks?.thumbnail?.replace("http", "https")
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .height(300.dp)
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .height(300.dp)
+                        .background(Color.Gray)
+                        .fillMaxWidth()
+                ) {
+                    Text("No Image Available", modifier = Modifier.align(Alignment.Center))
+                }
+            }
+            IconButton(
                 modifier = Modifier
-                    .height(300.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
-
-        } else {
-            Box(
-                modifier = Modifier
-                    .height(300.dp)
-                    .background(Color.Gray)
-                    .fillMaxWidth()
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.5f)),
+                onClick = {
+                    if (isFavorite) {
+                        favoriteBookViewModel.removeFavoriteBook(book.id)
+                    } else {
+                        favoriteBookViewModel.addFavoriteBook(
+                            FavoriteBook(
+                                id = book.id,
+                                title = book.volumeInfo.title,
+                                thumbnail = book.volumeInfo.imageLinks?.thumbnail
+                            )
+                        )
+                    }
+                }
             ) {
-                Text("No Image Available", modifier = Modifier.align(Alignment.Center))
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) Color.Red.copy(alpha = 0.8f) else Color.Black
+                )
             }
         }
         Column(Modifier.padding(8.dp)) {

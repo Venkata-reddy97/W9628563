@@ -15,8 +15,10 @@ import kotlinx.coroutines.launch
 import uk.ac.tees.mad.w9628563.screens.AddBookScreen
 import uk.ac.tees.mad.w9628563.screens.BookDetailsScreen
 import uk.ac.tees.mad.w9628563.screens.BookListScreen
+import uk.ac.tees.mad.w9628563.screens.FavoriteScreen
 import uk.ac.tees.mad.w9628563.screens.HomeScreen
 import uk.ac.tees.mad.w9628563.screens.LoginScreen
+import uk.ac.tees.mad.w9628563.screens.ProfileScreen
 import uk.ac.tees.mad.w9628563.screens.RegisterScreen
 import uk.ac.tees.mad.w9628563.screens.SplashScreen
 
@@ -55,7 +57,8 @@ fun BookLibraryNavigation() {
                     },
                     onBookList = {
                         navController.navigate(BookListDestination.navRoute)
-                    }
+                    },
+                    navController = navController
                 )
             }
 
@@ -87,6 +90,14 @@ fun BookLibraryNavigation() {
 
             composable(BookListDestination.navRoute) {
                 BookListScreen(navController = navController)
+            }
+
+            composable(ProfileDestination.navRoute) {
+                ProfileScreen(navController = navController)
+            }
+
+            composable(FavoriteDestination.navRoute) {
+                FavoriteScreen(navController = navController)
             }
         }
     }

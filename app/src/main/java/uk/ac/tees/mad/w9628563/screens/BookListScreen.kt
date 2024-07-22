@@ -39,6 +39,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import uk.ac.tees.mad.w9628563.navigation.BottomNavigationBar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,14 +57,12 @@ fun BookListScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Books") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+                title = { Text("My Books") }
             )
-        }
+        },
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        },
     ) {
         LazyColumn(
             modifier = Modifier

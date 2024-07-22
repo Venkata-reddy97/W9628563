@@ -37,5 +37,14 @@ object AddBookDestination: NavigationDestination{
 object BookListDestination: NavigationDestination{
     override val navRoute: String
         get() = "bookList"
+}
 
+object ProfileDestination: NavigationDestination{
+    override val navRoute: String
+        get() = "profile"
+}
+
+object FavoriteDestination: NavigationDestination{
+    override val navRoute: String
+        get() = "favorite"
 }
