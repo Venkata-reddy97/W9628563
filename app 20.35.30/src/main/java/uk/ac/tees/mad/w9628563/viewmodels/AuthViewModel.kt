@@ -41,10 +41,6 @@ class AuthViewModel @Inject constructor(
     private val _registerState = Channel<RegisterState>()
     val registerState = _registerState.receiveAsFlow()
 
-    fun resetLoginState() {
-        _loginState.update { LoginState() }
-    }
-
     fun updateLoginUiState(value: LoginUiState) {
         _loginUiState.value = value
     }
@@ -63,36 +59,6 @@ class AuthViewModel @Inject constructor(
                 is Resource.Success -> {
                     _loginStatus.send(LoginStatus(isSuccess = "Login Successful"))
                 }
-            }
-        }
-    }
-
-    var currentUsername = mutableStateOf("Guest")
-    private val userId = firebaseAuth.currentUser?.uid
-
-    init {
-        fetchUserDetails()
-    }
-
-    private fun fetchUserDetails() {
-        viewModelScope.launch {
-            userId?.let { uid ->
-                firestore.collection("users").document(uid).get()
-                    .addOnSuccessListener { snapshot ->
-                        Log.d("USER_DETAILS", "$snapshot")
-
-                        if (snapshot.exists()) {
-                            snapshot.data?.let { data ->
-                                data["username"]?.let { username ->
-                                    currentUsername.value = username.toString()
-                                }
-                            }
-                        } else {
-                            Log.d("USER_DETAILS", "No data found in Database")
-                        }
-                    }.addOnFailureListener { exception ->
-                        Log.e("USER_DETAILS", "Error fetching user details", exception)
-                    }
             }
         }
     }
@@ -146,8 +112,7 @@ class AuthViewModel @Inject constructor(
             val userMap = mapOf(
                 "email" to email,
                 "username" to username,
-                "profileImage" to "https://example.com/default-profile.png"
-                // Add other user data if needed
+                "profileImage" to "https://png.pngtree.com/png-vector/20220817/ourmid/pngtree-cartoon-man-avatar-vector-ilustration-png-image_6111064.png"
             )
             firestore.collection("users").document(it).set(userMap).await()
         }

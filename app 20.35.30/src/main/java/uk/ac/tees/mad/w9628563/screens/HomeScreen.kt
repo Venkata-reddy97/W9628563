@@ -18,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
@@ -28,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -69,7 +69,6 @@ import uk.ac.tees.mad.w9628563.viewmodels.FavoriteBookViewModel
 fun HomeScreen(
     onBookClick: (String) -> Unit,
     onAddBook: () -> Unit,
-    onBookList: () -> Unit,
     navController: NavHostController,
     favoriteBookViewModel: FavoriteBookViewModel = hiltViewModel()
 ) {
@@ -93,7 +92,9 @@ fun HomeScreen(
             BottomNavigationBar(navController = navController)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddBook) {
+            FloatingActionButton(
+                onClick = onAddBook
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         }) { innerPadding ->

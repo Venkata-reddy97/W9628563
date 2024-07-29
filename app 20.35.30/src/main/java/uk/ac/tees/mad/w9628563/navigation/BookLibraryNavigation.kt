@@ -55,9 +55,6 @@ fun BookLibraryNavigation() {
                     onAddBook = {
                         navController.navigate(AddBookDestination.navRoute)
                     },
-                    onBookList = {
-                        navController.navigate(BookListDestination.navRoute)
-                    },
                     navController = navController
                 )
             }
