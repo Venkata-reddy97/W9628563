@@ -119,9 +119,11 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Card(
                     onClick = {
-                        navController.navigate(LoginDestination.navRoute).also {
-                            profileViewModel.signOut()
-                            navController.popBackStack()
+                        profileViewModel.signOut()
+                        navController.navigate(LoginDestination.navRoute) {
+                            popUpTo(LoginDestination.navRoute) {
+                                inclusive = true
+                            }
 
                         }
                     },
